@@ -3,14 +3,18 @@ package com.example.spring2020finalyproject;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Results extends AppCompatActivity {
 
@@ -26,25 +30,30 @@ public class Results extends AppCompatActivity {
 
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://taco-randomizer.herokuapp.com/random/";
+        final String url = "http://taco-randomizer.herokuapp.com/random/?full-taco=true";
 
         // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
+        JsonObjectRequest jsonRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(String response) {
+                    public void onResponse(JSONObject response) {
                         // Display the first 500 characters of the response string.
-                        textView.setText(response);
+                        try {
+                            String recipe = response.get("recipe").toString();
+                            textView.setText(recipe);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                String errorMessage = "That didn't work!";
-                textView.setText(errorMessage);
-            }
-        });
-
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        String errorMessage = "That didn't work!";
+                        textView.setText(error.getMessage());
+                    }
+                });
         // Add the request to the RequestQueue.
-        queue.add(stringRequest);
+        queue.add(jsonRequest);
     }
 }
